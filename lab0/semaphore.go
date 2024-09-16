@@ -2,6 +2,7 @@ package lab0
 
 import (
 	"context"
+	"sync"
 	"sync/atomic"
 )
 
@@ -13,8 +14,11 @@ import (
 //   - when resources are depleted, block waiters and resume them
 //     when resources are available
 type Semaphore struct {
-	v      atomic.Int64
+	// changed this from atomic.int64 to int64 because of assignment issues in NewSemaphore
+	count  int64
 	signal chan struct{}
+	// added mutex to help prevent deadlocks and races
+	mx sync.Mutex
 
 	// You may add any other state here. You are also free to remove
 	// or modify any existing members.
@@ -22,10 +26,11 @@ type Semaphore struct {
 	// You may not use semaphore.Weighted in your implementation.
 }
 
+// NewSemaphore creates a new Semaphore with the given initial count.
 func NewSemaphore() *Semaphore {
 	return &Semaphore{
+		count:  0,
 		signal: make(chan struct{}),
-		// You may add any other initialization here
 	}
 }
 
@@ -36,6 +41,15 @@ func NewSemaphore() *Semaphore {
 // is that calling Release before any Acquire will panic in semaphore.Weighted,
 // but calling Post() before Wait() should neither block nor panic in our interface.
 func (s *Semaphore) Post() {
+	s.mx.Lock()
+	defer s.mx.Unlock()
+
+	atomic.AddInt64(&s.count, 1)
+	select {
+		case s.signal <- struct{}{}:
+		default:
+			// Channel is full or no waiting goroutines
+	}
 }
 
 // Wait decrements the semaphore value by one, if there are resources
@@ -48,5 +62,20 @@ func (s *Semaphore) Post() {
 //
 // Analagous to Acquire(ctx, 1) in semaphore.Weighted.
 func (s *Semaphore) Wait(ctx context.Context) error {
-	return nil
+	for {
+		s.mx.Lock()
+		if atomic.LoadInt64(&s.count) > 0 {
+			atomic.AddInt64(&s.count, -1)
+			s.mx.Unlock()
+			return nil
+		}
+		s.mx.Unlock()
+
+		select {
+		case <-s.signal:
+			// block until a resource is available 
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
 }

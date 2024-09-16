@@ -1,5 +1,5 @@
 # CS426: Lab 0 Introduction to Go and Concurrent Programming
-
+THIS IS A TEST!!! 
 This lab is intended to introduce you to the Go programming language
 and common concurrency primitives within Go. Concurrency is everywhere
 when building distributed systems. Go is a modern programming language,

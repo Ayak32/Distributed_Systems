@@ -2,6 +2,8 @@ package lab0
 
 import (
 	"context"
+	"sync"
+	
 )
 
 // MergeChannels should read from the channels `a` and `b`
@@ -19,8 +21,30 @@ import (
 // If you are stuck, consider revisiting channels in Tour of Go:
 //   - https://go.dev/tour/concurrency/4
 //   - https://go.dev/tour/concurrency/5
+
+// a and b can only recieve, out can only send
 func MergeChannels[T any](a <-chan T, b <-chan T, out chan<- T) {
-	panic("TODO: add your implementation")
+	defer close(out)
+
+	for {
+		select {
+			case x, ok := <-a:
+				if !ok {
+					a = nil
+				} else {
+					out <- x
+				}
+			case x, ok := <-b:
+				if !ok {
+					b = nil
+				} else {
+					out <- x
+				}
+			}
+		if a == nil && b == nil {
+			break
+		}
+	}
 }
 
 // MergeChannelsOrCancel provides similar semantics to MergeChannels, but
@@ -42,7 +66,33 @@ func MergeChannels[T any](a <-chan T, b <-chan T, out chan<- T) {
 // It is expected that your implemented is similar to `MergeChannels`. You do
 // not need to refactor to deduplicate your code, but you can if you want to.
 func MergeChannelsOrCancel[T any](ctx context.Context, a <-chan T, b <-chan T, out chan<- T) error {
-	panic("TODO: add your implementation")
+	defer close(out)
+
+	for {
+		select {
+			case <-ctx.Done():
+				if err := ctx.Err(); err != nil{
+					return err
+				}
+				return nil
+			case x, ok := <-a:
+				if !ok {
+					a = nil
+				} else {
+					out <- x
+				}
+			case x, ok := <-b:
+				if !ok {
+					b = nil
+				} else {
+					out <- x
+				}
+			}
+		if a == nil && b == nil {
+			break
+		}
+	}
+	return nil
 }
 
 // Fetcher is an interface which mimics fetching from some source
@@ -88,5 +138,36 @@ type Fetcher interface {
 // If you are stuck, consider reading the example for `WaitGroup` here:
 //   - https://pkg.go.dev/sync#example-WaitGroup
 func MergeFetches(a Fetcher, b Fetcher, out chan<- string) {
-	panic("TODO: add your implementation")
+	defer close(out)
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		for {
+			x, ok := a.Fetch()
+			if !ok {
+				wg.Done()
+				break
+
+			} else{
+				out <- x
+			}
+		}
+		
+	}()
+
+	go func() {
+		for {
+			x, ok := b.Fetch()
+			if !ok {
+				wg.Done()
+				break
+
+			} else{
+				out <- x
+			}
+		}
+	}()
+	wg.Wait()
+
 }

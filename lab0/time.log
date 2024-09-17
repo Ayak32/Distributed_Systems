@@ -11,9 +11,19 @@ Date  Started  Spent Work completed
 
 9/11   10:15am  1:00 Completed Tour of Go
 
+9/12   7:00pm   2:00 Implemented merge_channels.go
+
+9/14   9:45pm   1:00 wrote code for queue.go
+
+9/16   7:30am   3:00 Implemented queue.go and semaphore.go, fixed environment setup  
                ----
-                TOTAL time spent
+               14:00 TOTAL time spent
 
-I discussed my solution with: .
+I discussed my solution with: Chatgpt.
 
-discussion: 
+discussion:  
+Most of the time I spent on this pset was dedicated to learning Go and setting up (and debugging) the environment. 
+The coding was not too difficult, especially with the hints the given in the comments above each function. I used Chatgpt to help me 
+fix syntax errors (and improve Golang style), find bugs, and explain the functionality of certian tests. It was a great learning tool and 
+now I feel a bit more comfortable with Golang and Docker. I believe if I had more consistent availability (several consequentive hours) to Work
+on this pset, I would have finished it sooner. Especially early on, working on it for an hour and having to come back later slowed my progress

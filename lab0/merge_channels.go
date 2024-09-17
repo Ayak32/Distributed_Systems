@@ -3,7 +3,6 @@ package lab0
 import (
 	"context"
 	"sync"
-	
 )
 
 // MergeChannels should read from the channels `a` and `b`
@@ -28,19 +27,26 @@ func MergeChannels[T any](a <-chan T, b <-chan T, out chan<- T) {
 
 	for {
 		select {
-			case x, ok := <-a:
-				if !ok {
-					a = nil
-				} else {
-					out <- x
-				}
-			case x, ok := <-b:
-				if !ok {
-					b = nil
-				} else {
-					out <- x
-				}
+		// reads from a
+		// checks whether the channel has been closed
+		// sends to out if not
+		case x, ok := <-a:
+			if !ok {
+				a = nil
+			} else {
+				out <- x
 			}
+		// reads from b
+		// checks whether the channel has been closed
+		// sends to out if not
+		case x, ok := <-b:
+			if !ok {
+				b = nil
+			} else {
+				out <- x
+			}
+		}
+		//breaks loop if both channels have been closed, allowing out to be closed
 		if a == nil && b == nil {
 			break
 		}
@@ -70,24 +76,25 @@ func MergeChannelsOrCancel[T any](ctx context.Context, a <-chan T, b <-chan T, o
 
 	for {
 		select {
-			case <-ctx.Done():
-				if err := ctx.Err(); err != nil{
-					return err
-				}
-				return nil
-			case x, ok := <-a:
-				if !ok {
-					a = nil
-				} else {
-					out <- x
-				}
-			case x, ok := <-b:
-				if !ok {
-					b = nil
-				} else {
-					out <- x
-				}
+		// handles ctx done and error possibility
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				return err
 			}
+			return nil
+		case x, ok := <-a:
+			if !ok {
+				a = nil
+			} else {
+				out <- x
+			}
+		case x, ok := <-b:
+			if !ok {
+				b = nil
+			} else {
+				out <- x
+			}
+		}
 		if a == nil && b == nil {
 			break
 		}
@@ -140,6 +147,7 @@ type Fetcher interface {
 func MergeFetches(a Fetcher, b Fetcher, out chan<- string) {
 	defer close(out)
 	var wg sync.WaitGroup
+	// add 2 to waitgroup since we have two channels
 	wg.Add(2)
 
 	go func() {
@@ -149,11 +157,11 @@ func MergeFetches(a Fetcher, b Fetcher, out chan<- string) {
 				wg.Done()
 				break
 
-			} else{
+			} else {
 				out <- x
 			}
 		}
-		
+
 	}()
 
 	go func() {
@@ -163,7 +171,7 @@ func MergeFetches(a Fetcher, b Fetcher, out chan<- string) {
 				wg.Done()
 				break
 
-			} else{
+			} else {
 				out <- x
 			}
 		}

@@ -78,9 +78,8 @@ func (q *ConcurrentQueue[T]) Pop() (T, bool) {
 		return dflt, false
 	}
 
-
 	first_element := q.contents[0]
 	q.contents = q.contents[1:]
-	
+
 	return first_element, true
 }

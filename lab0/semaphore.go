@@ -46,9 +46,9 @@ func (s *Semaphore) Post() {
 
 	atomic.AddInt64(&s.count, 1)
 	select {
-		case s.signal <- struct{}{}:
-		default:
-			// Channel is full or no waiting goroutines
+	case s.signal <- struct{}{}:
+	default:
+		// Channel is full or no waiting goroutines
 	}
 }
 
@@ -73,7 +73,7 @@ func (s *Semaphore) Wait(ctx context.Context) error {
 
 		select {
 		case <-s.signal:
-			// block until a resource is available 
+			// block until a resource is available
 		case <-ctx.Done():
 			return ctx.Err()
 		}

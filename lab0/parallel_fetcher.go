@@ -11,7 +11,7 @@ import (
 // You can use a `semaphore.Weighted` with `context.Background()` to handle the blocking.
 type ParallelFetcher struct {
 	fetcher Fetcher
-	sema *semaphore.Weighted
+	sema    *semaphore.Weighted
 	// Add your fields here
 }
 
@@ -23,7 +23,7 @@ type ParallelFetcher struct {
 func NewParallelFetcher(fetcher Fetcher, maxConcurrencyLimit int) *ParallelFetcher {
 	return &ParallelFetcher{
 		fetcher: fetcher,
-		sema: semaphore.NewWeighted(int64(maxConcurrencyLimit)),
+		sema:    semaphore.NewWeighted(int64(maxConcurrencyLimit)),
 
 		// Add more initialization here
 	}
@@ -42,7 +42,5 @@ func (pf *ParallelFetcher) Fetch() (string, bool) {
 
 	defer pf.sema.Release(1)
 	return pf.fetcher.Fetch()
-
-
 
 }

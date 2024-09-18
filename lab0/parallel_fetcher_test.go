@@ -135,5 +135,11 @@ func TestParallelFetcher(t *testing.T) {
 }
 
 func TestParallelFetcherAdditional(t *testing.T) {
-	// TODO: add your additional tests here
+	t.Run("no fetchers", func(t *testing.T) {
+		pf := lab0.NewParallelFetcher(NewMockFetcher([]string{}, 0), 1)
+
+		_, ok := pf.Fetch()
+		require.False(t, ok)
+	})
+
 }

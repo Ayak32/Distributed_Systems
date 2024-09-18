@@ -192,7 +192,8 @@ func TestMergeFetchesAdditional(t *testing.T) {
 		lab0.MergeFetches(newChannelFetcher(a), newChannelFetcher(b), out)
 	})
 
-	t.Run("one closed channel", func(t *testing.T) {
+	// NEW TEST
+	t.Run("empty fetchers", func(t *testing.T) {
 		a := &emptyFetcher{}
 		b := &emptyFetcher{}
 		out := make(chan string)
@@ -200,7 +201,7 @@ func TestMergeFetchesAdditional(t *testing.T) {
 
 		lab0.MergeFetches(a, b, out)
 		// If your lab0 hangs here, make sure you are closing your channels!
-		require.Equal(t, []string{"a1", "b1", "b2", "b3"}, chanToSlice(out))
+		require.Empty(t, chanToSlice(out))
 	})
 
 }
